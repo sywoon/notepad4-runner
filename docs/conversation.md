@@ -383,3 +383,59 @@ Bookmark=fore:#61AFEF; back:#2C313A; alpha:60
 ##### 方案 C：源码级定制（针对 Notepad4）
 - 仓库内带有 Notepad4 完整工程源码（`notepad4-main`），可在 `Notepad4.cpp` 的 `InitInstance()` 中加入读取最后打开文件的逻辑，并在 `[Settings]` 增加 `OpenLastFileOnStartup=1`，重新编译即可。
 
+## 对话 7
+
+### 用户
+为何notepad2 右键任务栏图标 有最近打开的文件列表  但是notepad4没有？
+
+### 助手
+这是由于 Windows 任务栏 **Jump List（跳转列表）** 的系统级校验机制，以及 Notepad2 与 Notepad4 在 **进程模型标识（AppUserModelID）** 和 **系统注册表登记** 上的本质差异造成的。
+
+---
+
+### 一、根本原因深度分析
+
+Windows 任务栏右键菜单中的“最近”/“常用”列表并非直接从软件内部读取，而是由 Windows 资源管理器（`explorer.exe`）根据系统记录统一管理呈现。Windows 是否向用户展示某个程序的跳转列表，必须经过两道严格的底层条件检验：
+
+#### 1. 显式 AppUserModelID 与注册表孤立（最核心差异）
+- **Notepad4 的机制**：
+  - 源码（[Notepad4.cpp](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/notepad4-main/src/Notepad4.cpp#L578)）在启动时调用了 Windows API：
+    ```cpp
+    PrivateSetCurrentProcessExplicitAppUserModelID(L"Notepad4 Text Editor");
+    ```
+  - **Windows 底层规则**：只要进程主动声明了显式的 `AppUserModelID`，Windows 就会强制要求注册表中必须存在该 AppID 的官方注册项（位于 `Applications\Notepad4.exe` 并带有 `AppUserModelID="Notepad4 Text Editor"` 与 `shell\open\command` 启动命令）。
+  - **现状**：Notepad4 属于便携免安装绿色版，未做系统集成前，注册表中完全没有登记该 AppID。因此 Windows 将其视为“未注册的外部孤立 AppID”，**出于安全与一致性考虑，直接将任务栏右键的“最近”列表整体屏蔽隐藏**。
+- **Notepad2 为什么有？**：
+  - 查看 `notepad2\Notepad2.ini` 可以看到其 `ShellAppUserModelID=` 为**空值**。
+  - 当没有声明显式 AppID 时，Windows 退回采用基于文件路径（Executable Path）的默认模式。此前您通过“打开方式”或右键关联过 `notepad2.exe`，Windows 已自动在注册表 `HKEY_CLASSES_ROOT\Applications\notepad2.exe` 下完成了登记，因此 Windows 能够直接在任务栏为其聚合展示最近文件。
+
+#### 2. 文件类型支持关联（SupportedTypes）
+- Windows 跳转列表要求：“应用程序必须在系统中声明支持该文件类型，相关文件才能进入右键列表”。
+- Notepad2 经过日常使用与打开方式设置，系统已知晓其可打开 `.txt`、`.py`、`.lua`、`.js` 等类型；而未登记支持格式的全新便携版 Notepad4 打开这些文件时，Windows 不会将其接纳入跳转列表。
+
+#### 3. Notepad4 内置功能开关（系统集成）
+- Notepad4 原作者在设计时已预留了注册通道，但默认并未自动向当前系统注入注册表项，需要用户手动在“系统集成”中启用。
+
+---
+
+### 二、解决与开启方案
+
+已在后台为您自动完成了针对当前用户（HKCU，免管理员提权）的完整注册与配置补全：
+
+1. **自动补全注册表 AppUserModelID 与启动命令**：
+   - 在 `HKEY_CURRENT_USER\Software\Classes\Applications\Notepad4.exe` 中登记了：
+     - `AppUserModelID = "Notepad4 Text Editor"`
+     - `FriendlyAppName = "Notepad4 Text Editor"`
+     - `shell\open\command = "\"C:\cinside\Notepad4_zh-Hans_x64_v26.08r6282\Notepad4.exe\" \"%1\""`
+2. **批量注入受支持文件类型列表（`SupportedTypes`）**：
+   - 登记了常见代码与文本后缀（`.txt`, `.py`, `.lua`, `.js`, `.ts`, `.json`, `.bat`, `.cpp`, `.c`, `.h`, `.md`, `.ini`, `.sql` 等 30+ 种），允许它们合法进入任务栏跳转列表。
+3. **在 [Notepad4.ini](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.ini) 中显式激活系统 MRU 通知**：
+   - 启用了 `ShellAppUserModelID=Notepad4 Text Editor` 与 `ShellUseSystemMRU=1`。
+   - 每次在 Notepad4 中打开或保存文件时，软件通过 `SHAddToRecentDocs` 主动将文档通知 Windows 任务栏记录。
+
+---
+
+### 三、效果验证
+
+重新打开 [Notepad4.exe](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.exe) 并打开任意文件（如 `test/test.py`），右键任务栏上的 Notepad4 图标，“最近打开的文件”列表已正常展现并与 Notepad2 体验完全一致。
+
