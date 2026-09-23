@@ -1,0 +1,23 @@
+
+
+这是notepad4软件 用其他ai生成的主题配置文件Notepad4-onedark-yuanbao.ini(格式内容不同)
+按照软件只有的格式参考Notepad4.ini-default  修改到Notepad4.ini
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
