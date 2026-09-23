@@ -9,6 +9,9 @@
 评估：替换软件的默认运行命令 都改为执行run.bat + 传入打开的文件全路径
 
 
+1 notepad4-main是软件的源码 采用修改源码的方式 来实现ctrl+L执行run.bat + 传入打开的文件全路径
+2 扩展run.bat 来支持运行不同语言的文件 比如：用lua执行.lua  用python执行.py 用node执行.js 用tsx执行.ts
+
 
 
 

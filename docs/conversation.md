@@ -217,3 +217,55 @@ Bookmark=fore:#61AFEF; back:#2C313A; alpha:60
    - 编写并提供模块化、自适应多语言的万能 `run.bat` 模板；
    - 根据您的选择，为您实施 `Notepad4.exe` 的补丁修改或配置生效。
 
+## 对话 4
+
+### 用户
+采用方案A
+
+### 助手
+已成功采用 **方案 A（二进制精准 Patch）** 对 [Notepad4.exe](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.exe) 完成机器码重定向与功能改造，并将根目录下的 [run.bat](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/run.bat) 升级为完备的多语言自适应调度器。
+
+---
+
+### 一、二进制 Patch 实施细节
+
+1. **原版安全备份**：
+   - 原始未经修改的二进制程序已备份至根目录的 `Notepad4.exe.orig`。
+
+2. **核心执行流接管（`Ctrl+L` / 运行文件）**：
+   - **完整保留原生前置机制**：触发 `Ctrl+L` 时，原版原生的“文件修改自动保存检测”（`call 0x1401316f0`）与“当前文件所在目录解析”仍然最优先执行。
+   - **跳入专属代码区**：在 Case 8 核心装配处（`0x140123547`，文件偏移 `0x122947`）写入 `jmp 0x14015dec0`，将原本直接调用系统打开的流程重定向至 `.text` 段空闲代码区。
+
+3. **注入的汇编调度 Stub 逻辑（RVA `0x15dec0`）**：
+   - **智能路径探测**：
+     - 优先检测**当前被打开文件所在目录**是否存在 `run.bat`。如果当前项目工程自带构建脚本，则优先使用该目录下的专属 `run.bat`；
+     - 若当前目录无 `run.bat`，自动通过 `GetModuleFileNameW` 解析 Notepad4 安装根目录，回退调用主程序旁的全局 [run.bat](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/run.bat)。
+   - **参数双引号防断裂**：通过 `wsprintfW` 将当前打开文件的全路径严谨包裹为 `"%s"` 并填入 `lpParameters`，即使文件路径中含有空格或特殊字符也能无损传递。
+   - **工作目录绑定**：将 `lpDirectory` 设定为当前被编辑文件所在文件夹，确保代码执行时的相对路径读取完全正确。
+   - **完全兼容 ASLR**：所有 API（`wsprintfW`、`GetModuleFileNameW`、`PathAppendW`、`ShellExecuteExW` 等）均使用 RIP 相对间接寻址（`call [rip + disp32]`），在系统动态地址随机化下 100% 稳健运行。
+
+---
+
+### 二、配套通用调度器 [run.bat](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/run.bat) 功能扩展
+
+已在根目录下建立功能完备的 [run.bat](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/run.bat)，内置多语言自动识别与编译运行管线：
+
+- **Python 脚本** (`.py`)：自动调用 `python "%~1"`。
+- **Lua 脚本** (`.lua`)：自动探测并调用 `lua` 或 `luajit`。
+- **JavaScript / JSX** (`.js`, `.jsx`)：自动调用 `node "%~1"`。
+- **TypeScript / TSX** (`.ts`, `.tsx`)：自动优先探测 `tsx` / `bun` / `ts-node`，若未安装则回退通过 `npx -y tsx` 即时解析运行。
+- **C / C++ 源码** (`.c`, `.cpp`, `.cxx`)：自动探测本地 `gcc`/`g++` 或 `clang`/`clang++`，一键编译为 exe 并立即运行。
+- **Rust** (`.rs`)：自动调用 `rustc` 编译并运行。
+- **Go** (`.go`)：自动调用 `go run "%~1"`。
+- **批处理 / Shell** (`.bat`, `.cmd`, `.ps1`, `.sh`)：直接原生解释执行。
+- **控制台防闪退**：末尾自动提示执行耗时与 `[进程已结束，退出代码: %ERRORLEVEL%]` 并保持 `pause`，彻底解决黑框闪退问题。
+
+---
+
+### 三、实机自动化验证
+
+1. **进程启动与界面测试**：启动 [Notepad4.exe](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.exe) 打开文档，PE 结构与界面加载正常无崩溃。
+2. **快捷键触发测试**：向窗口投递 `WM_COMMAND 40008`（即按下 `Ctrl+L` 或点击菜单“运行文件”）：
+   - 测试项目内部路径：成功捕获并启动 `run.bat`，控制台正确输出 `"C:\cinside\Notepad4_zh-Hans_x64_v26.08r6282\docs\conversation.md"`。
+   - 测试外部独立路径（桌面文件）：成功激活全局回退机制，正确传递桌面文件全路径并执行。
+
