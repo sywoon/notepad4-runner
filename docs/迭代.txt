@@ -13,9 +13,10 @@
 2 扩展run.bat 来支持运行不同语言的文件 比如：用lua执行.lua  用python执行.py 用node执行.js 用tsx执行.ts
 
 
+1 bug：用test/test.py来测试  发现ctrl+L后弹出窗口后立刻自动关闭了
 
-
-
+1 参考Notepad2-them.ini的配色方案 改造Notepad4.ini
+2 打开Notepad2.exe后 能否默认打开上一次的文件
 
 
 
