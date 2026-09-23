@@ -315,3 +315,71 @@ Bookmark=fore:#61AFEF; back:#2C313A; alpha:60
   ```
 - 窗口稳定驻留在底部提示 `[进程已结束，退出代码: 2]` 与 `请按任意键继续. . .`，不再闪退。
 
+## 对话 6
+
+### 用户
+1 参考Notepad2-them.ini的配色方案 改造Notepad4.ini
+2 打开Notepad2.exe后 能否默认打开上一次的文件
+
+### 助手
+已参考 [Notepad2-them.ini](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad2-them.ini) 的经典护眼灰底高对比配色方案，完成对 [Notepad4.ini](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.ini) 的全面改造；同时针对“打开 Notepad2.exe（及 Notepad4.exe）后默认打开上一次文件”的需求进行了完整可行性评估并提供了落地实现方案。
+
+---
+
+### 一、参考 Notepad2-them.ini 改造 Notepad4.ini
+
+已将原配置文件备份为 `Notepad4.ini.before_n2them.bak`。转换后的 [Notepad4.ini](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.ini) 严格遵循 Notepad4 的 UTF-16 LE（含 BOM）规范，核心特性如下：
+
+1. **自定义 16 色调色板（`[Custom Colors]`）**：
+   - 完整同步 `Notepad2-them.ini` 中的 16 种经典配色值（深蓝 `#0A246A`、宝蓝 `#003CE6`、墨绿 `#006633`、草绿 `#608020`、橄榄 `#648000`、褐色 `#A46000`、浅黄 `#FFF1A8`、橙黄 `#FFC000`、亮橙 `#FF4000`、朱红 `#C80000`、紫红 `#B000B0`、卡其 `#B28B40` 等）。
+
+2. **全局基础样式（`[Global Styles]`）**：
+   - **字体与底色**：全局采用 `font:Cousine Nerd Font; size:11; fore:#000000; back:#C0C0C0`（经典复古银灰底色与黑色文字）。
+   - **行号栏**：`fore:#FF0000; back:#C0C0C0`（鲜亮红色行号，清晰醒目）。
+   - **光标行高亮**：`Current Line=size:1; back:#FFFF00; alpha:50; outline:60`（50% 半透明亮黄高亮）。
+   - **选中文本**：`Selected Text=back:#0A246A; eolfilled; alpha:95`（深蓝高对比选区填充）。
+   - **括号匹配**：`Matching Brace=size:+1; bold; fore:#FF0000`（粗体鲜红放大高亮）；错误括号 `fore:#000080`。
+   - **不可见字符与边界**：空白符号显示为 `fore:#FF4000`；长行边界标记 `fore:#FFC000`；缩进指示线 `fore:#A0A0A0`。
+   - **行距间隙**：启用 `Extra Line Spacing=size:2`，与原版 Notepad2 阅读间隙一致。
+
+3. **全语言语法高亮适配**：
+   - 将 `Notepad2-them.ini` 中的语法着色规则深度映射至 Notepad4 Scintilla 词法器：
+     - **Python**：注释深红 `#880000`、关键字深蓝 `#000088`、字符串草绿 `#008800`、数字橙红 `#FF4000`、函数/类名紫色 `#660066`、运算符粗体橄榄 `#666600`。
+     - **C / C++**：关键字粗体深蓝 `#0A246A`、预处理橙色 `#FF8000`、类型宝蓝 `#003CE6`、字符串绿色 `#008000`、数字红色 `#FF0000`、运算符紫红 `#B000B0`。
+     - **JavaScript / TypeScript**：关键字粗体褐色 `#A46000`、正则绿色带浅黄底 `back:#FFF1A8`、对象属性深蓝 `#0A246A`。
+     - **批处理 / Shell**：关键字粗体深蓝、变量宝蓝带浅黄底、标签朱红白底 `fore:#C80000; back:#F4F4F4`。
+     - **Config / INI**：节名粗体带金黄底色 `Section=bold; fore:#000000; back:#FFD24D; eolfilled`、键值红色 `#FF0000`、注释绿色。
+     - **Diff 补丁**：新增行绿底 `#C0FF60`、删除行红底 `#FF8060`、变动行蓝底 `#99D7FF`。
+     - 同步优雅适配了 HTML/Web、XML、CSS、SQL、PowerShell、Lua、Rust、Go、Markdown、JSON 等所有语言。
+
+---
+
+### 二、评估：“打开 Notepad2.exe 后能否默认打开上一次的文件”
+
+#### 1. 原生软件机制说明
+- **Notepad2 / Notepad4 设计初衷**：两款软件均遵循 Windows 原生记事本定位，**设计为当不带任何参数直接双击启动时，默认必定创建“无标题空白文档（Untitled）”**。官方原生配置中并未提供“自动恢复上次会话”的 INI 开关。
+- **当前配置现状**：目前 `C:\cinside\notepad2\Notepad2.ini` 中配置了 `SaveRecentFiles=0`，即默认甚至关闭了历史打开记录。必须先将其开启为 `SaveRecentFiles=1`，软件退出时才会把最后一次打开的文件写入 `[Recent Files]` 的 `01=路径` 中。
+- **快捷键直达方式**：如果开启了 `SaveRecentFiles=1`，启动后按键盘 `Alt+F` 接着按 `H`（或直接在“文件”菜单顶部选择），即可秒开最近文件。
+
+#### 2. 实现“双击直接打开上一次文件”的落地方案
+
+##### 方案 A：极速智能启动器（推荐，零侵入、最安全稳定）
+- **实现原理**：
+  编写一个免弹窗的轻量启动脚本 `Notepad2.vbs`（或在桌面上创建一个快捷方式）：
+  1. **外部有参数时**（例如右键用 Notepad2 打开某个文件）：直接原样透传打开该目标文件；
+  2. **外部无参数时**（用户直接双击启动）：
+     - 脚本自动读取 `Notepad2.ini` 的 `[Recent Files]` 第一项（`01=...`）；
+     - 检测若该文件存在，则自动执行 `Notepad2.exe "%LastFile%"`，直接打开上次的文件；
+     - 若历史为空或文件已被移动，则正常启动空白 Notepad2。
+  - **优势**：不修改任何 exe 二进制，100% 稳健，启动毫无延迟。
+
+##### 方案 B：二进制 Patch（机器码直接重定向）
+- **实现原理**：
+  在 `Notepad2.exe`（或 `Notepad4.exe`）的启动加载流程（`InitInstance`）中：
+  当检测到 `lpCmdLine` 为空时，原本调用的是 `FileLoad(FileLoadFlag_New, L"")`；
+  通过二进制 Patch 将其重定向至优先读取 MRU 列表第 1 项 `FileLoad(FileLoadFlag_Default, mruFile.pszItems[0])`。
+  - **优势**：完全不需要外壳脚本，双击原版 exe 就能直接获得该行为。
+
+##### 方案 C：源码级定制（针对 Notepad4）
+- 仓库内带有 Notepad4 完整工程源码（`notepad4-main`），可在 `Notepad4.cpp` 的 `InitInstance()` 中加入读取最后打开文件的逻辑，并在 `[Settings]` 增加 `OpenLastFileOnStartup=1`，重新编译即可。
+

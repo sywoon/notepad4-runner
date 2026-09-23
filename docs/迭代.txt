@@ -18,7 +18,7 @@
 1 参考Notepad2-them.ini的配色方案 改造Notepad4.ini
 2 打开Notepad2.exe后 能否默认打开上一次的文件
 
-
+1 ctrl+shift+i 打开一个控制台 默认输出当前的文件 等待我输入具体参数来执行
 
 
 
