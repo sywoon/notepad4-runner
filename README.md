@@ -7,8 +7,8 @@
 
 
 默认字体：Cousine Nerd  [字体下载](https://www.nerdfonts.com/font-downloads)
-![银色主题](https://github.com/sywoon/ImageCache/raw/master/doc/theme-silver.jpg)
-![onedark主题](https://github.com/sywoon/ImageCache/raw/master/doc/theme-onedark.jpg)
+![银色主题](https://github.com/sywoon/notepad4-runner/blob/master/docs/theme-silver.jpg)
+![onedark主题](https://github.com/sywoon/notepad4-runner/blob/master/docs/theme-onedark.jpg)
 
 
 ---
