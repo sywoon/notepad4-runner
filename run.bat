@@ -11,21 +11,25 @@ if "%~1"=="" (
     exit /b 1
 )
 
+:: 提前捕获文件的绝对路径与元信息（防止cd后相对路径二次解析错位）
+set "TARGET_FILE=%~f1"
+set "TARGET_DIR=%~dp1"
+set "TARGET_NAME=%~nx1"
+set "EXT=%~x1"
+
 :: 切换工作目录至当前打开的文件所在目录
-cd /d "%~dp1"
+cd /d "%TARGET_DIR%"
 
 echo ======================================================================
 echo [Notepad4 Runner]
-echo 当前文件: %~nx1
-echo 全路径  : %~1
-echo 所在目录: %~dp1
-echo 扩展名  : %~x1
+echo 当前文件: %TARGET_NAME%
+echo 全路径  : %TARGET_FILE%
+echo 所在目录: %TARGET_DIR%
+echo 扩展名  : %EXT%
 echo ======================================================================
 echo.
 
 :: 根据文件后缀名进行调度执行
-set "EXT=%~x1"
-
 if /i "%EXT%"==".bat" goto RUN_BAT
 if /i "%EXT%"==".cmd" goto RUN_BAT
 if /i "%EXT%"==".py" goto RUN_PYTHON
@@ -49,28 +53,30 @@ if /i "%EXT%"==".sh" goto RUN_BASH
 goto RUN_DEFAULT
 
 :RUN_BAT
-call "%~1"
+call "%TARGET_FILE%"
 goto FINISH
 
 :RUN_PYTHON
 python -V 2>nul
-python "%~1"
+echo ----------------------------------------------------------------------
+echo.
+python "%TARGET_FILE%"
 goto FINISH
 
 :RUN_LUA
 if exist "C:\cinside\lua5.3\runlua.bat" (
     set "path=C:\cinside\lua5.3;%path%"
-    call "C:\cinside\lua5.3\runlua.bat" "%~1"
+    call "C:\cinside\lua5.3\runlua.bat" "%TARGET_FILE%"
     goto FINISH
 )
 where lua >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     lua -v 2>nul
-    lua "%~1"
+    lua "%TARGET_FILE%"
 ) else (
     where luajit >nul 2>nul
     if !ERRORLEVEL! equ 0 (
-        luajit "%~1"
+        luajit "%TARGET_FILE%"
     ) else (
         echo [ERROR] 未找到 lua 或 luajit 解释器！
     )
@@ -78,24 +84,27 @@ if %ERRORLEVEL% equ 0 (
 goto FINISH
 
 :RUN_NODE
+echo nodejs version:
 node -v 2>nul
-node "%~1"
+echo ----------------------------------------------------------------------
+echo.
+node "%TARGET_FILE%"
 goto FINISH
 
 :RUN_TS
 where tsx >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    tsx "%~1"
+    call tsx "%TARGET_FILE%"
 ) else (
     where bun >nul 2>nul
     if !ERRORLEVEL! equ 0 (
-        bun run "%~1"
+        call bun run "%TARGET_FILE%"
     ) else (
         where ts-node >nul 2>nul
         if !ERRORLEVEL! equ 0 (
-            ts-node "%~1"
+            call ts-node "%TARGET_FILE%"
         ) else (
-            npx -y tsx "%~1"
+            call npx -y tsx "%TARGET_FILE%"
         )
     )
 )
@@ -104,26 +113,26 @@ goto FINISH
 :RUN_TSX
 where tsx >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    tsx "%~1"
+    call tsx "%TARGET_FILE%"
 ) else (
     where bun >nul 2>nul
     if !ERRORLEVEL! equ 0 (
-        bun run "%~1"
+        call bun run "%TARGET_FILE%"
     ) else (
-        npx -y tsx "%~1"
+        call npx -y tsx "%TARGET_FILE%"
     )
 )
 goto FINISH
 
 :RUN_COFFEE
-call coffee "%~1"
+call coffee "%TARGET_FILE%"
 goto FINISH
 
 :RUN_C
 where gcc >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    echo [GCC] 正在编译 %~nx1 ...
-    gcc "%~1" -o "%~n1.exe"
+    echo [GCC] 正在编译 %TARGET_NAME% ...
+    gcc "%TARGET_FILE%" -o "%~n1.exe"
     if !ERRORLEVEL! equ 0 (
         echo [GCC] 编译成功，启动运行:
         echo ----------------------------------------------------------------------
@@ -134,8 +143,8 @@ if %ERRORLEVEL% equ 0 (
 ) else (
     where clang >nul 2>nul
     if !ERRORLEVEL! equ 0 (
-        echo [Clang] 正在编译 %~nx1 ...
-        clang "%~1" -o "%~n1.exe"
+        echo [Clang] 正在编译 %TARGET_NAME% ...
+        clang "%TARGET_FILE%" -o "%~n1.exe"
         if !ERRORLEVEL! equ 0 (
             echo [Clang] 编译成功，启动运行:
             echo ----------------------------------------------------------------------
@@ -145,7 +154,7 @@ if %ERRORLEVEL% equ 0 (
         )
     ) else (
         echo [WARN] 未找到 gcc 或 clang 编译器，尝试直接执行...
-        "%~1"
+        "%TARGET_FILE%"
     )
 )
 goto FINISH
@@ -153,8 +162,8 @@ goto FINISH
 :RUN_CPP
 where g++ >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    echo [G++] 正在编译 %~nx1 ...
-    g++ "%~1" -o "%~n1.exe"
+    echo [G++] 正在编译 %TARGET_NAME% ...
+    g++ "%TARGET_FILE%" -o "%~n1.exe"
     if !ERRORLEVEL! equ 0 (
         echo [G++] 编译成功，启动运行:
         echo ----------------------------------------------------------------------
@@ -165,8 +174,8 @@ if %ERRORLEVEL% equ 0 (
 ) else (
     where clang++ >nul 2>nul
     if !ERRORLEVEL! equ 0 (
-        echo [Clang++] 正在编译 %~nx1 ...
-        clang++ "%~1" -o "%~n1.exe"
+        echo [Clang++] 正在编译 %TARGET_NAME% ...
+        clang++ "%TARGET_FILE%" -o "%~n1.exe"
         if !ERRORLEVEL! equ 0 (
             echo [Clang++] 编译成功，启动运行:
             echo ----------------------------------------------------------------------
@@ -176,31 +185,31 @@ if %ERRORLEVEL% equ 0 (
         )
     ) else (
         echo [WARN] 未找到 g++ 或 clang++ 编译器，尝试直接执行...
-        "%~1"
+        "%TARGET_FILE%"
     )
 )
 goto FINISH
 
 :RUN_RUST
-rustc "%~1" && "%~n1.exe"
+rustc "%TARGET_FILE%" && "%~n1.exe"
 goto FINISH
 
 :RUN_GO
-go run "%~1"
+go run "%TARGET_FILE%"
 goto FINISH
 
 :RUN_POWERSHELL
-powershell -ExecutionPolicy Bypass -File "%~1"
+powershell -ExecutionPolicy Bypass -File "%TARGET_FILE%"
 goto FINISH
 
 :RUN_BASH
-bash "%~1"
+bash "%TARGET_FILE%"
 goto FINISH
 
 :RUN_DEFAULT
-echo 正在执行: "%~1" ...
+echo 正在执行: "%TARGET_FILE%" ...
 echo ----------------------------------------------------------------------
-call "%~1"
+call "%TARGET_FILE%"
 goto FINISH
 
 :FINISH
