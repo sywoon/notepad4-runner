@@ -1,5 +1,5 @@
 notepad4-main
-*.exe
+#*.exe
 *.orig
 *.bak
 __pycache__/

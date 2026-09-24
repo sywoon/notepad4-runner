@@ -44,6 +44,7 @@
   - 融合了经典 **Notepad2 护眼方案** 与流行 **Atom/VS Code OneDark 配色**。
   - 对 20+ 种常用语法词法分析器（Scintilla Lexers）进行了全量精细调优（包括 JavaScript、TypeScript、Python、Lua、C/C++、Markdown、JSON、SQL、Batch、Ini、TOML、YAML 等）。
   - 背景色调柔和防视觉疲劳，关键字、字符串、函数名、注释与运算符具有高可辨识度的对比层次。
+- **切换方式**：重命名Notepad4-onedark.ini / Notepad4-silver.ini 为Notepad4.ini替换它
 
 ---
 
@@ -86,7 +87,7 @@ Notepad4_zh-Hans_x64_v26.08r6282/
     ├── note4-test.js          # JavaScript 用例
     ├── note4-test.py          # Python 用例
     ├── note4-test.coffee      # CoffeeScript 用例
-    └── lua_test.lua           # Lua 用例
+    └── note4-test.lua           # Lua 用例
 ```
 
 ---
