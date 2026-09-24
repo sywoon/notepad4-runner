@@ -5,8 +5,8 @@ notepad4-main
 __pycache__/
 
 
-doc/conversation.md
-doc/µü´ú.txt
+docs/conversation.md
+docs/µü´ú.txt
 
 AGENTS.md
 GEMINI.md
