@@ -2,14 +2,21 @@
 
 本项目是在原生便携版 **Notepad4 (x64 zh-Hans)** 的基础上，针对现代开发者的高频需求进行深度定制与扩展的增强版本。
 
-在完全保留原生 Notepad4 **“极速启动、毫秒级响应、零侵入单文件、极低内存占用”** 优势的前提下，补齐了原生软件在代码编译运行、多语言开发调度、现代深色主题和 Windows 系统集成等方面的短板，打造出媲美 Sublime Text / VS Code 的轻快型“一键运行”文本与代码编辑器。
+在完全保留原生 Notepad4 **“极速启动、毫秒级响应、零侵入单文件、极低内存占用”** 优势的前提下，补齐了原生软件在脚本代码运行、现代深色主题和 Windows 系统集成等方面的短板，打造出轻快型“一键运行”文本与代码编辑器。主要方便学习不同脚本语言的语法，立刻执行打开的测试脚本查看结果，也能兼顾代替系统的记事本功能。
+
+
+
+默认字体：Cousine Nerd  [字体下载](https://www.nerdfonts.com/font-downloads)
+![银色主题](https://github.com/sywoon/ImageCache/raw/master/doc/theme-silver.jpg)
+![onedark主题](https://github.com/sywoon/ImageCache/raw/master/doc/theme-onedark.jpg)
+
 
 ---
 
 ## 🚀 核心扩展功能一览
 
 ### 1. `Ctrl + L` 通用多语言即时运行器 (Polyglot Runner)
-- **原生痛点**：原生 Notepad4 的 `Ctrl + L`（运行文件）仅调用 Windows 系统关联打开文件，无法进行编译、传参，且控制台脚本执行完毕后会瞬间闪退关闭。
+- **原生痛点**：原生 Notepad4 的 `Ctrl + L`（运行文件）仅调用 Windows 系统关联打开文件，无法直接运行脚本。
 - **扩展实现**：
   - 对 [Notepad4.exe](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/Notepad4.exe) 底层 `WM_COMMAND` 分发机制进行了汇编级安全 Patch，将 `Ctrl + L` 的执行流直接重定向至同目录下的调度核心 [run.bat](file:///C:/cinside/Notepad4_zh-Hans_x64_v26.08r6282/run.bat)。
   - 执行时**自动保存当前已修改文件**，并完整传递当前文件的绝对全路径。
@@ -67,28 +74,7 @@
 
 ---
 
-## 📂 项目结构说明
 
-```text
-Notepad4_zh-Hans_x64_v26.08r6282/
-├── Notepad4.exe               # 主程序（已打入 Ctrl+L 执行流重定向补丁）
-├── Notepad4.exe.orig          # 主程序原版二进制备份
-├── run.bat                    # 多语言调度核心运行器
-├── Notepad4.ini               # 主配置文件（主题配色、系统集成、编辑器首选项）
-├── matepath.exe               # 伴随轻量文件管理器
-├── matepath.ini               # 文件管理器运行时配置
-├── patch_tool.py              # 二进制补丁分析与重写工具（供审计与回溯）
-├── AGENTS.md / GEMINI.md      # 项目协作自动化工作流规范
-├── docs/                      # 核心演进与迭代文档
-│   ├── conversation.md        # 完整迭代对话记录与技术分析沉淀
-│   └── 迭代.txt               # 功能需求与历史演进草稿
-└── test/                      # 多语言验证用例集
-    ├── note4-test.ts          # TypeScript 用例
-    ├── note4-test.js          # JavaScript 用例
-    ├── note4-test.py          # Python 用例
-    ├── note4-test.coffee      # CoffeeScript 用例
-    └── note4-test.lua           # Lua 用例
-```
 
 ---
 
