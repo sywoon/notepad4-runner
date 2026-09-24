@@ -3,3 +3,11 @@ notepad4-main
 *.orig
 *.bak
 __pycache__/
+
+
+doc/conversation.md
+doc/µü´ú.txt
+
+AGENTS.md
+GEMINI.md
+
