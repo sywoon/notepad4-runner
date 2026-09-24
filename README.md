@@ -8,7 +8,7 @@
 
 默认字体：Cousine Nerd  [字体下载](https://www.nerdfonts.com/font-downloads)
 不同主题截图
-![银色主题](https://github.com/sywoon/notepad4-runner/blob/master/docs/theme-silver.jpg)
+![银色主题](https://github.com/sywoon/notepad4-runner/blob/master/docs/theme-silver2.jpg)
 ![onedark主题](https://github.com/sywoon/notepad4-runner/blob/master/docs/theme-onedark.jpg)
 
 
@@ -52,7 +52,7 @@
   - 融合了经典 **Notepad2 护眼方案** 与流行 **Atom/VS Code OneDark 配色**。
   - 对 20+ 种常用语法词法分析器（Scintilla Lexers）进行了全量精细调优（包括 JavaScript、TypeScript、Python、Lua、C/C++、Markdown、JSON、SQL、Batch、Ini、TOML、YAML 等）。
   - 背景色调柔和防视觉疲劳，关键字、字符串、函数名、注释与运算符具有高可辨识度的对比层次。
-- **切换方式**：重命名Notepad4-onedark.ini / Notepad4-silver.ini 为Notepad4.ini替换它
+- **切换方式**：重命名Notepad4-onedark.ini / Notepad4-silver.ini / Notepad4-silver2.ini 为Notepad4.ini替换它
 
 ---
 
